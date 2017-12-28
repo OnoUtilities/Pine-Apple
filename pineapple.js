@@ -99,15 +99,20 @@ class Chunks {
             if (chunk.enabled == true) {
                 let runtime = chunk.runtime
                 this.instance[chunk.id] = new runtime()
+                
             }
         }
     }
-    start(id) {
+    start(id, arg = null) {
         for (let data in this.data) {
             let self = this.data[data]
             if (self.chunk.id == id) {
                 let runtime = self.runtime
-                this.instance[self.chunk.id] = new runtime()
+                if (arg != null) {
+                    this.instance[self.chunk.id] = new runtime(arg)
+                } else {
+                    this.instance[self.chunk.id] = new runtime()
+                }
             } 
         }
     }
@@ -127,6 +132,9 @@ class Chunks {
     }
     getList() {
         return this.data
+    }
+    getRuntime(id) {
+ 
     }
     getChunk(name) {
         for (let data in this.data) {
@@ -287,7 +295,7 @@ class Handler {
         } catch (e) {
             let line = e.stack.split("\n")[0].split(":")[1]
             let code = e.stack.split("\n")[1].trim()
-            Chunk.error(`Error on line ${line} in file ${file}: \n\t\t${code}\n`)
+            customConsole.error(`Error on line ${line} in file ${file}: \n\t\t${code}\n`)
             PineApple.Core.totalChunks--
         }
     }
