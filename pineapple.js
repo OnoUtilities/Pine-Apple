@@ -47,8 +47,11 @@ const getAllIndexes = (str, word) => {
 const PineApple = {}
 
 class Logging {
-    constructor(prefix) {
+    constructor() {
         this.prefix = ` ${this.colorText("green", "Pine")}${this.colorText("yellow", "Apple")} |`
+    }
+    setPrefix(color, word) {
+        this.prefix = " " + this.colorText(color, word) + " |"
     }
     colorText(color, text) {
         switch (color) {
@@ -379,7 +382,7 @@ class Core {
         }
     }
 }
-PineApple.Logging = new Logging("PineApple")
+PineApple.Logging = new Logging()
 PineApple.Chunks = new Chunks()
 PineApple.Handler = new Handler()
 PineApple.Complier = new Complier()
