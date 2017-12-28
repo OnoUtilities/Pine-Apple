@@ -12,5 +12,9 @@
     "require-from-string": "^2.0.1",
     "uuid": "^3.1.0",
     "vm2": "^3.5.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OnoUtilities/Pine-Apple.git"
   }
 }
