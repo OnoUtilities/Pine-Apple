@@ -97,9 +97,18 @@ class Chunks {
         for (let data in this.data) {
             let chunk = this.data[data]
             if (chunk.enabled == true) {
-                let i = chunk.runtime
-                this.instance[chunk.id] = new i()
+                let runtime = chunk.runtime
+                this.instance[chunk.id] = new runtime()
             }
+        }
+    }
+    start(id) {
+        for (let data in this.data) {
+            let self = this.data[data]
+            if (self.chunk.id == id) {
+                let runtime = self.runtime
+                this.instance[self.chunk.id] = new runtime()
+            } 
         }
     }
     add(data) {
