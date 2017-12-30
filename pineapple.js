@@ -137,7 +137,15 @@ class Chunks {
         return this.data
     }
     getRuntime(id) {
- 
+        
+    }
+    getInstance(id) {
+        for (let data in this.data) {
+            if (this.data[data].chunk.id == id && this.instance[id] != null ) {
+                return this.instance[id]
+            } 
+        }
+        return null;
     }
     getChunk(name) {
         for (let data in this.data) {
@@ -156,6 +164,20 @@ class Chunks {
         }
         return null
     }
+}
+
+class Stem {
+    constructor() {
+        this.stems = {}
+    }
+    export(name, instance) {
+        this.stems[name] = new instance()
+    }
+    getStem(name) {
+        if (this.stems[name] != null) {
+            return this.stems[name]
+        }
+    } 
 }
 class Complier {
     constructor() { 
@@ -260,7 +282,7 @@ class Complier {
                     break
                 }
             }
-            let custom = `_export("${id+"."+name.toUpperCase()}", ${name})\n`
+            let custom = `\n_export("${id+"."+name.toUpperCase()}", ${name})\n`
             code = code + custom
         }
         code = replaceAll(code, "export ", "")
@@ -285,6 +307,9 @@ class Handler {
         }
         customConsole.error = (message) => {
             PineApple.Logging.error(`[CHUNK][${id}][MAIN] ${message}`)
+        }
+        customConsole.print = (message) => {
+          console.log(message)
         }
         this.files[id] = file
 
@@ -315,7 +340,7 @@ class Handler {
         let uuidList = ""
         let runtimeList = ""
         let _export = (name, instance) => {
-            me.stems[name] = new instance()
+            PineApple.Stem.export(name, instance) 
         }
         let chunkRuntime = {}
         let Stem = {}
@@ -329,14 +354,13 @@ class Handler {
             let chunk = PineApple.Chunks.getChunk(c)
             let uuid = `_${chunk.uuid}_`
             uuidList = uuidList + `${uuid}, `
-            chunkRuntime[chunk.id] = chunk.runtime
+            chunkRuntime[c] = PineApple.Chunks.getInstance(c)
             runtimeList = runtimeList + `chunkRuntime["${c}"], `
             let Chunk = {}
             
         }
         uuidList = uuidList + "console"
         runtimeList = runtimeList + "Stem"
-
         let vmCode = `module.exports = function(_export, ${uuidList}) { ${code} }`
         let run = vm.run(vmCode);
         let doRun = `run(_export, ${runtimeList})`
@@ -384,8 +408,8 @@ class Core {
 }
 PineApple.Logging = new Logging()
 PineApple.Chunks = new Chunks()
+PineApple.Stem = new Stem()
 PineApple.Handler = new Handler()
 PineApple.Complier = new Complier()
 PineApple.Core = new Core()
-
 module.exports = PineApple
