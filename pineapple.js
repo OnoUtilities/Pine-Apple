@@ -48,45 +48,75 @@ const PineApple = {}
 
 class Logging {
     constructor() {
+        this.chrome = false
         this.prefix = ` ${this.colorText("green", "Pine")}${this.colorText("yellow", "Apple")} |`
     }
     setPrefix(color, word) {
-        this.prefix = " " + this.colorText(color, word) + " |"
+        if (this.chrome == true) {
+            this.prefix = "[" + word + "] "
+        } else {
+            this.prefix = " " + this.colorText(color, word) + " |"
+        }
+    }
+    inChrome() {
+        this.chrome = true
     }
     colorText(color, text) {
-        switch (color) {
-            case 'black':
-                text = '\x1B[30m' + text; break;
-            case 'red':
-                text = '\x1B[31m' + text; break;
-            case 'green':
-                text = '\x1B[32m' + text; break;
-            case 'yellow':
-                text = '\x1B[33m' + text; break;
-            case 'blue':
-                text = '\x1B[34m' + text; break;
-            case 'magenta':
-                text = '\x1B[35m' + text; break;
-            case 'cyan':
-                text = '\x1B[36m' + text; break;
-            case 'white':
-                text = '\x1B[37m' + text; break;
-            default:
-                text = color + text; break;
+        if (this.chrome == false) {
+            switch (color) {
+                case 'black':
+                    text = '\x1B[30m' + text; break;
+                case 'red':
+                    text = '\x1B[31m' + text; break;
+                case 'green':
+                    text = '\x1B[32m' + text; break;
+                case 'yellow':
+                    text = '\x1B[33m' + text; break;
+                case 'blue':
+                    text = '\x1B[34m' + text; break;
+                case 'magenta':
+                    text = '\x1B[35m' + text; break;
+                case 'cyan':
+                    text = '\x1B[36m' + text; break;
+                case 'white':
+                    text = '\x1B[37m' + text; break;
+                default:
+                    text = color + text; break;
+            }
+            return text + '\x1B[39m' + '\x1b[0m';
         }
-        return text + '\x1B[39m' + '\x1b[0m';
+        return text
     };
-    log(message, color="green") {
-        message = `${this.prefix} ${this.colorText(color, message)}`
-        console.log(message)
+    log(message, color = "green") {
+        if (this.chrome == false) {
+            message = `${this.prefix} ${this.colorText(color, message)}`
+            console.log(message)
+        } else {
+            message = `${this.prefix} %c${message}`
+            let css = `color: ${color};`
+            setTimeout(console.log.bind(console, message, css), 0);
+        }
     }
     info(message) {
-        message = `${this.prefix} ${this.colorText("cyan", message)}`
-        console.log(message)
+        if (this.chrome == false) {
+            message = `${this.prefix} ${this.colorText("cyan", message)}`
+            console.log(message)
+        } else {
+            message = `${this.prefix} %c${message}`
+            let css = `color: cyan;`
+            setTimeout(console.log.bind(console, message, css), 0);
+        }
+
     }
     error(message) {
-        message = `${this.prefix} ${this.colorText("red", message)}`
-        console.log(message)
+        if (this.chrome == false) {
+            message = `${this.prefix} ${this.colorText("red", message)}`
+            console.log(message)
+        } else {
+            message = `${this.prefix} %c${message}`
+            let css = `color: red;`
+            setTimeout(console.log.bind(console, message, css), 0);
+        }
     }
 }
 
@@ -98,11 +128,11 @@ class Chunks {
     }
     cut() {
         for (let data in this.data) {
-            let chunk = this.data[data]
-            if (chunk.enabled == true) {
-                let runtime = chunk.runtime
-                this.instance[chunk.id] = new runtime()
-                
+            let self = this.data[data]
+            if (self.enabled == true) {
+                let runtime = self.runtime
+                this.instance[self.chunk.id] = new runtime()
+
             }
         }
     }
@@ -116,7 +146,7 @@ class Chunks {
                 } else {
                     this.instance[self.chunk.id] = new runtime()
                 }
-            } 
+            }
         }
     }
     add(data) {
@@ -137,13 +167,13 @@ class Chunks {
         return this.data
     }
     getRuntime(id) {
-        
+
     }
     getInstance(id) {
         for (let data in this.data) {
-            if (this.data[data].chunk.id == id && this.instance[id] != null ) {
+            if (this.data[data].chunk.id == id && this.instance[id] != null) {
                 return this.instance[id]
-            } 
+            }
         }
         return null;
     }
@@ -151,7 +181,7 @@ class Chunks {
         for (let data in this.data) {
             if (this.data[data].chunk.id == name) {
                 return this.data[data]
-            } 
+            }
         }
         return null
     }
@@ -168,19 +198,37 @@ class Chunks {
 
 class Stem {
     constructor() {
-        this.stems = {}
+        this.allStems = {}
+        this.exportedStems = {}
     }
-    export(name, instance) {
-        this.stems[name] = new instance()
-    }
-    getStem(name) {
-        if (this.stems[name] != null) {
-            return this.stems[name]
+    add(directory, id, settings) {
+        if (this.allStems[id] == null) {
+            let data = {}
+            data.id = id
+            data.settings = settings
+            data.directory = directory
+            data.uuid = replaceAll(uuidv4(), "-", "")
+            this.allStems[id] = data
+            this.exportedStems[id] = {}
         }
-    } 
+    }
+    export(id, name, instance) {
+        this.exportedStems[id][name] = new instance()
+    }
+    getStem(id, name) {
+        if (this.exportedStems[id][name] != null) {
+            return this.exportedStems[id][name]
+        }
+    }
+    getStemList(id) {
+        return this.exportedStems[id] 
+    }
+    listAllStems() {
+        return this.allStems
+    }
 }
 class Complier {
-    constructor() { 
+    constructor() {
         this.chunksUsed = {}
     }
     getChunksUsed(id) {
@@ -189,8 +237,9 @@ class Complier {
         }
         return null
     }
-    compileCode(id, code, settings) {
+    compileCode(directory, id, code, settings) {
         this.chunksUsed[id] = {}
+        code = this._use(id, code, settings)
         code = this._import(id, code, settings)
         code = this._export(id, code)
         return code
@@ -254,7 +303,7 @@ class Complier {
                 PineApple.Logging.error("Invaild Chunk")
             }
             code = this._handler(chunks[chunk], uuid, settings) + "\n" + code
-            
+
         } else {
             //
         }
@@ -282,19 +331,57 @@ class Complier {
                     break
                 }
             }
-            let custom = `\n_export("${id+"."+name.toUpperCase()}", ${name})\n`
+            let custom = `\n_export("${id}", "${name.toUpperCase()}", ${name})\n`
             code = code + custom
         }
         code = replaceAll(code, "export ", "")
         return code
+    }
+    _use(id, code, settings) {
+        let stems = PineApple.Stem.listAllStems()
+        for (let stem in stems) {
+            let data = stems[stem]
+            let matches = getAllIndexes(code, `use\\("${data.id}"\\)`)
+            if (matches.length > 0) {
+                if (this._checkStem(stem.id, data)) {
+                    code = replaceAll(code, `use\\("${data.id}"\\)`, `__${data.uuid}__`)
+                }
+            }
+        }
+        return code
+    }
+    _checkStem(id, self) {
+        let stems = PineApple.Stem.listAllStems()
+        for (let stem in stems) {
+            if (stem.id == id) {
+                let data = stems[stem]
+                if (data.directory = self.directory) {
+                    return true
+                } else {
+                    if (stem.lock == false) {
+                        return true
+                    }
+                }
+            }
+        }
+        return false
     }
 }
 class Handler {
     constructor() {
         this.files = {}
         this.instance = {}
-
         this.stems = {}
+        this.vm = {}
+    }
+    createVM(directory, settings) {
+        if (settings.vm == null) {
+            settings.vm = {
+                console: 'off',
+                sandbox: {},
+            }
+        }
+        this.vm[directory] = new NodeVM(settings.vm);
     }
     loadChunk(id, file, settings) {
         let me = this
@@ -309,7 +396,7 @@ class Handler {
             PineApple.Logging.error(`[CHUNK][${id}][MAIN] ${message}`)
         }
         customConsole.print = (message) => {
-          console.log(message)
+            console.log(message)
         }
         this.files[id] = file
 
@@ -327,22 +414,21 @@ class Handler {
             PineApple.Core.totalChunks--
         }
     }
-    loadStem(id, file, settings) {
+    loadStem(directory, id, file, settings) {
         let me = this
         let text = fs.readFileSync(file, 'utf8');
-        let code = PineApple.Complier.compileCode(id, text, settings) //.data and .chunks
-
-        const vm = new NodeVM({
-            console: 'off',
-            sandbox: {},
-        });
+        let code = PineApple.Complier.compileCode(directory, id, text, settings) //.data and .chunks
         let version = "1.0.0"
-        let uuidList = ""
-        let runtimeList = ""
-        let _export = (name, instance) => {
-            PineApple.Stem.export(name, instance) 
+        let uuidChunkList = ""
+        let runtimeChunkList = ""
+
+
+        let _export = (id, name, instance) => {
+            PineApple.Stem.export(id, name, instance)
         }
+
         let chunkRuntime = {}
+
         let Stem = {}
         Stem.log = (message) => {
             PineApple.Logging.log(`[STEM][${id}] ${message}`, "magenta")
@@ -350,24 +436,40 @@ class Handler {
         Stem.error = (message) => {
             PineApple.Logging.error(`[STEM][${id}] ${message}`)
         }
+
+
+
         for (let c in PineApple.Complier.getChunksUsed(id)) {
             let chunk = PineApple.Chunks.getChunk(c)
             let uuid = `_${chunk.uuid}_`
-            uuidList = uuidList + `${uuid}, `
+            uuidChunkList = uuidChunkList + `${uuid}, `
             chunkRuntime[c] = PineApple.Chunks.getInstance(c)
-            runtimeList = runtimeList + `chunkRuntime["${c}"], `
+            runtimeChunkList = runtimeChunkList + `chunkRuntime["${c}"], `
             let Chunk = {}
-            
+
         }
-        uuidList = uuidList + "console"
-        runtimeList = runtimeList + "Stem"
-        let vmCode = `module.exports = function(_export, ${uuidList}) { ${code} }`
-        let run = vm.run(vmCode);
-        let doRun = `run(_export, ${runtimeList})`
+        uuidChunkList = uuidChunkList + "console"
+        runtimeChunkList = runtimeChunkList + "Stem"
+
+        ///////////////////
+        let stems = PineApple.Stem.listAllStems()
+
+        let stemRuntime = {}
+        let uuidStemList = ""
+        let runtimeStemList = ""
+        for (let stem in stems) {
+            let data = stems[stem]
+            stemRuntime[data.id] = PineApple.Stem.getStemList(data.id)
+            //console.log(PineApple.Stem.getStemList(data.id))
+            runtimeStemList = runtimeStemList + `, stemRuntime["${data.id}"]`
+            uuidStemList = uuidStemList + `, __${data.uuid}__`
+        }
+
+        ///////////////
+        let vmCode = `module.exports = function(_export, ${uuidChunkList}${uuidStemList}) { ${code} }`
+        let run = this.vm[directory].run(vmCode);
+        let doRun = `run(_export, ${runtimeChunkList}${runtimeStemList})`
         eval(doRun)
-    }
-    listStems() {
-        
     }
 }
 
@@ -394,7 +496,16 @@ class Core {
         PineApple.Chunks.cut()
     }
     useStem(directory, settings) {
+        PineApple.Handler.createVM(directory, settings)
         let files = walkSync(directory)
+        for (let file in files) {
+            this.totalStems++
+            let f = files[file]
+            f = f.replace(/\\/g, "/");
+            let id = splitAt(f.lastIndexOf("/"))(f)[0]
+            id = replaceAll(id, "/", ".").toUpperCase()
+            PineApple.Stem.add(directory, id, settings)
+        }
         for (let file in files) {
             this.totalStems++
             let f = files[file]
@@ -402,7 +513,7 @@ class Core {
 
             let id = splitAt(f.lastIndexOf("/"))(f)[0]
             id = replaceAll(id, "/", ".").toUpperCase()
-            PineApple.Handler.loadStem(id, `./${f}`, settings)
+            PineApple.Handler.loadStem(directory, id, `./${f}`, settings)
         }
     }
 }
