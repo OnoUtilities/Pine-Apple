@@ -1,7 +1,7 @@
 {
   "name": "@onoutilities/pine-apple",
-  "version": "0.0.10",
-  "description": "A Sandboxed JavaScript Management System",
+  "version": "1.0.0",
+  "description": "A WIP Sandboxed JavaScript Management System",
   "main": "pineapple.js",
   "keywords": [
     "manager"
