@@ -202,8 +202,6 @@ class Stem {
         this.exportedStems = {}
     }
     add(directory, id, settings) {
-        console.log(id)
-        console.log(name)
         if (this.allStems[id] == null) {
             let data = {}
             data.id = id
@@ -215,8 +213,6 @@ class Stem {
         }
     }
     export(id, name, instance) {
-        console.log(id)
-        console.log(name)
         this.exportedStems[id][name] = new instance()
     }
     getStem(id, name) {
@@ -272,9 +268,9 @@ class Complier {
                     code = this._encode(id, code, chunk, settings)
                 }
             } else {
+                //Haha u don't has permission!
             }
         }
-        code = replaceAll(code, `import "`, `var _ = "`)
         return code
 
     }
@@ -473,7 +469,6 @@ class Handler {
 
         ///////////////
         let vmCode = `module.exports = function(_export, ${uuidChunkList}${uuidStemList}) { ${code} }`
-        console.log(vmCode)
         let run = this.vm[directory].run(vmCode);
         let doRun = `run(_export, ${runtimeChunkList}${runtimeStemList})`
         eval(doRun)
@@ -495,7 +490,7 @@ class Core {
 
             let id = splitAt(f.lastIndexOf("/"))(f)[0]
             id = replaceAll(id, "/", ".").toUpperCase()
-            PineApple.Handler.loadChunk(id, `${f}`, settings)
+            PineApple.Handler.loadChunk(id, `./${f}`, settings)
         }
     }
     enableChunks() {
@@ -503,48 +498,24 @@ class Core {
         PineApple.Chunks.cut()
     }
     useStem(directory, settings) {
-        console.log(directory)
         PineApple.Handler.createVM(directory, settings)
         let files = walkSync(directory)
-        let folder = ""
-        if (settings.base != null) {
-            console.log("FOLDFER")
-            folder = directory.replace(/\\/g, "/");
-            folder = splitAt(folder.lastIndexOf("/"))(folder)[0]
-            folder = splitAt(folder.lastIndexOf("/"))(folder)[1]
-            folder = replaceAll(folder, "/", "")
-        }
         for (let file in files) {
             this.totalStems++
             let f = files[file]
-            let id = ""
-            if (settings.base != null) {
-                f = f.replace(/\\/g, "/");
-                id = splitAt(f.lastIndexOf(folder))(f)[1]
-                id = splitAt(id.lastIndexOf("/"))(id)[0]
-                id = replaceAll(id, "/", ".").toUpperCase()
-            } else {
-                f = f.replace(/\\/g, "/");
-                id = splitAt(f.lastIndexOf("/"))(f)[0]
-                id = replaceAll(id, "/", ".").toUpperCase()
-            }
+            f = f.replace(/\\/g, "/");
+            let id = splitAt(f.lastIndexOf("/"))(f)[0]
+            id = replaceAll(id, "/", ".").toUpperCase()
             PineApple.Stem.add(directory, id, settings)
         }
         for (let file in files) {
             this.totalStems++
             let f = files[file]
-            let id = ""
-            if (settings.base != null) {
-                f = f.replace(/\\/g, "/");
-                id = splitAt(f.lastIndexOf(folder))(f)[1]
-                id = splitAt(id.lastIndexOf("/"))(id)[0]
-                id = replaceAll(id, "/", ".").toUpperCase()
-            } else {
-                f = f.replace(/\\/g, "/");
-                id = splitAt(f.lastIndexOf("/"))(f)[0]
-                id = replaceAll(id, "/", ".").toUpperCase()
-            }
-            PineApple.Handler.loadStem(directory, id, `${f}`, settings)
+            f = f.replace(/\\/g, "/");
+
+            let id = splitAt(f.lastIndexOf("/"))(f)[0]
+            id = replaceAll(id, "/", ".").toUpperCase()
+            PineApple.Handler.loadStem(directory, id, `./${f}`, settings)
         }
     }
 }
